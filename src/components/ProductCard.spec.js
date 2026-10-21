@@ -1,0 +1,61 @@
+import { act } from 'react';
+import { createRoot } from 'react-dom/client';
+import { MemoryRouter } from 'react-router-dom';
+import ProductCard from './ProductCard';
+import { ToastProvider } from '../context/ToastContext';
+import { CartProvider } from '../context/CartContext';
+import { ProductsProvider } from '../context/ProductsContext';
+import { PRODUCTS } from '../data/products';
+
+describe('ProductCard', () => {
+  let container;
+  let root;
+
+  beforeEach(() => {
+    window.IS_REACT_ACT_ENVIRONMENT = true;
+    localStorage.clear();
+    container = document.createElement('div');
+    document.body.appendChild(container);
+    root = createRoot(container);
+    act(() => {
+      root.render(
+        <MemoryRouter>
+          <ToastProvider>
+            <ProductsProvider>
+              <CartProvider>
+                <ProductCard product={PRODUCTS[0]} />
+              </CartProvider>
+            </ProductsProvider>
+          </ToastProvider>
+        </MemoryRouter>
+      );
+    });
+  });
+
+  afterEach(() => {
+    act(() => root.unmount());
+    container.remove();
+  });
+
+  it('muestra nombre, descripción y precio', () => {
+    expect(container.querySelector('h3').textContent).toBe('PlayStation 5');
+    expect(container.querySelector('.product-desc').textContent).toContain('825 GB');
+    expect(container.querySelector('.price').textContent).toContain('900');
+  });
+
+  it('muestra la categoría del producto', () => {
+    expect(container.querySelector('.category-tag').textContent).toBe('Consolas');
+  });
+
+  it('enlaza al detalle del producto', () => {
+    expect(container.querySelector('h3 a').getAttribute('href')).toBe('/producto/ps5');
+  });
+
+  it('al presionar "Añadir" guarda el producto en el carrito', () => {
+    act(() => {
+      container.querySelector('.btn-add').click();
+    });
+    const cart = JSON.parse(localStorage.getItem('storego_cart'));
+    expect(cart).toEqual([{ id: 'ps5', qty: 1 }]);
+  });
+});
