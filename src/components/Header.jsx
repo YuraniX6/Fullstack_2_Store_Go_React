@@ -23,19 +23,32 @@ export default function Header() {
       <div className="scan-line"></div>
       <div className="container header-inner">
         <Link to="/" className="logo"><span>Store</span>Go</Link>
-        <nav className={`nav${open ? ' open' : ''}`} id="mainNav">
-          <NavLink to="/" end onClick={close}>Inicio</NavLink>
-          <NavLink to="/productos" onClick={close}>Productos</NavLink>
-          <NavLink to="/contacto" onClick={close}>Contacto</NavLink>
-          {!session && (
-            <>
-              <Link to="/login" onClick={close}>Iniciar sesión</Link>
-              <Link to="/registro" onClick={close}>Registrarse</Link>
-            </>
-          )}
-          {session && session.rol !== 'cliente' && <Link to="/admin" onClick={close}>Panel</Link>}
-          {session && <a href="#" onClick={handleLogout}>Salir ({session.nombre})</a>}
+
+        {/* Navbar de Bootstrap: se despliega en pantallas chicas y queda en línea desde md */}
+        <nav className="navbar navbar-expand-md">
+          <div className={`collapse navbar-collapse${open ? ' show' : ''}`} id="mainNav">
+            <ul className="navbar-nav">
+              <li className="nav-item"><NavLink to="/" end className="nav-link" onClick={close}>Inicio</NavLink></li>
+              <li className="nav-item"><NavLink to="/productos" className="nav-link" onClick={close}>Productos</NavLink></li>
+              <li className="nav-item"><NavLink to="/contacto" className="nav-link" onClick={close}>Contacto</NavLink></li>
+              {!session && (
+                <>
+                  <li className="nav-item"><NavLink to="/login" className="nav-link" onClick={close}>Iniciar sesión</NavLink></li>
+                  <li className="nav-item"><NavLink to="/registro" className="nav-link" onClick={close}>Registrarse</NavLink></li>
+                </>
+              )}
+              {session && session.rol !== 'cliente' && (
+                <li className="nav-item"><NavLink to="/admin" className="nav-link" onClick={close}>Panel</NavLink></li>
+              )}
+              {session && (
+                <li className="nav-item">
+                  <a href="#" className="nav-link" onClick={handleLogout}>Salir ({session.nombre})</a>
+                </li>
+              )}
+            </ul>
+          </div>
         </nav>
+
         <div className="header-actions">
           <Link to="/carrito" className="icon-btn" aria-label="Carrito">
             <img
@@ -45,7 +58,13 @@ export default function Header() {
             />
             <span className="cart-count">{count}</span>
           </Link>
-          <button className="icon-btn" id="menuToggle" aria-label="Abrir menú" onClick={() => setOpen(o => !o)}>
+          <button
+            className="icon-btn d-md-none"
+            id="menuToggle"
+            aria-label="Abrir menú"
+            aria-expanded={open}
+            onClick={() => setOpen(o => !o)}
+          >
             <span className="bar"></span>
             <span className="bar"></span>
             <span className="bar"></span>

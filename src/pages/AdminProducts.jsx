@@ -21,8 +21,8 @@ export default function AdminProducts() {
         <h1>Productos</h1>
         <Link to="/admin/producto-nuevo" className="btn btn-primary">+ Nuevo producto</Link>
       </div>
-      <div className="table-wrap">
-        <table className="admin-table">
+      <div className="table-responsive">
+        <table className="table table-hover align-middle">
           <thead>
             <tr>
               <th>Imagen</th>
@@ -46,7 +46,7 @@ export default function AdminProducts() {
                 <td>{p.stock}</td>
                 <td>
                   {p.custom ? (
-                    <button className="remove-item" onClick={() => handleRemove(p)}>Eliminar</button>
+                    <button className="btn btn-sm btn-outline-danger" onClick={() => handleRemove(p)}>Eliminar</button>
                   ) : (
                     <span className="table-desc">Base</span>
                   )}

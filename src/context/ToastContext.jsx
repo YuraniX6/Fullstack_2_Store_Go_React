@@ -19,7 +19,7 @@ export function ToastProvider({ children }) {
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
-      <div className={`toast${visible ? ' show' : ''}`} role="status" aria-live="polite">
+      <div className={`sg-toast${visible ? ' show' : ''}`} role="status" aria-live="polite">
         {message}
       </div>
     </ToastContext.Provider>

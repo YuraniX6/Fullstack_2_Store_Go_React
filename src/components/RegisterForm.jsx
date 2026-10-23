@@ -81,7 +81,7 @@ export default function RegisterForm({ admin = false }) {
           <p className="auth-sub">Crea tu cuenta para comprar en StoreGo.</p>
         </div>
       )}
-      <div className="form-grid">
+      <div className="row g-3">
         <Field {...common('run')} label="RUN" type="text" autoComplete="off"
           hint="Sin puntos ni guion, de 7 a 9 caracteres. Ej: 111111111" />
         <Field {...common('fechaNacimiento')} label="Fecha de nacimiento (opcional)" type="date" />

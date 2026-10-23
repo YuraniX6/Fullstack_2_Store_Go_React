@@ -22,8 +22,8 @@ export default function Cart() {
       <div className="container">
         <span className="eyebrow">STOREGO MARKET</span>
         <h2 className="section-title">Tu carrito</h2>
-        <div className="carrito-layout">
-          <div className="items-carrito">
+        <div className="carrito-layout row g-4">
+          <div className="items-carrito col-lg-8">
             {items.length === 0 ? (
               <p className="carrito-vacio">Tu carrito está vacío.</p>
             ) : (
@@ -45,6 +45,7 @@ export default function Cart() {
               ))
             )}
           </div>
+          <div className="col-lg-4">
           <aside className="resumen">
             <h2>Resumen</h2>
             <div className="resumen-linea">
@@ -64,6 +65,7 @@ export default function Cart() {
               Finalizar compra
             </button>
           </aside>
+          </div>
         </div>
       </div>
     </section>

@@ -78,7 +78,7 @@ export default function ProductForm() {
 
   return (
     <form className="auth-card wide" onSubmit={handleSubmit} noValidate>
-      <div className="form-grid">
+      <div className="row g-3">
         <Field {...common('name')} label="Nombre del producto" type="text" placeholder="Ej: Control DualSense" />
         <Field {...common('category')} label="Categoría">
           <option value="">-- Seleccione la categoría --</option>
@@ -90,19 +90,19 @@ export default function ProductForm() {
         <Field {...common('desc')} as="textarea" rows={4} label="Descripción" full
           hint="Máximo 300 caracteres" />
 
-        <div className="form-field full">
-          <label htmlFor="imagen">Imagen (opcional)</label>
+        <div className="col-12">
+          <label htmlFor="imagen" className="form-label">Imagen (opcional)</label>
           <input
             key={inputKey}
             id="imagen"
             name="imagen"
             type="file"
             accept="image/*"
-            className={imageError ? 'invalid' : imageUrl ? 'valid' : ''}
+            className={`form-control ${imageError ? 'is-invalid' : imageUrl ? 'is-valid' : ''}`.trim()}
             onChange={handleImage}
           />
-          <small className="field-hint">JPG, PNG, WEBP o AVIF, hasta 5 MB. Se reduce automáticamente.</small>
-          <small className="field-error">{imageError}</small>
+          <div className="form-text">JPG, PNG, WEBP o AVIF, hasta 5 MB. Se reduce automáticamente.</div>
+          <div className="invalid-feedback">{imageError}</div>
           {imageUrl && <img className="image-preview" src={imageUrl} alt="Vista previa del producto" />}
         </div>
       </div>

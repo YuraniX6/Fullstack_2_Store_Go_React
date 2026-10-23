@@ -32,9 +32,11 @@ export default function ProductDetail() {
         <p className="breadcrumb">
           <Link to="/">Inicio</Link> › <Link to="/productos">Productos</Link> › <span>{product.name}</span>
         </p>
-        <div className="detail-layout">
-          <div className="detail-image"><img src={product.img} alt={product.name} /></div>
-          <div className="detail-info">
+        <div className="row g-4 align-items-start">
+          <div className="col-md-6">
+            <div className="detail-image"><img src={product.img} alt={product.name} /></div>
+          </div>
+          <div className="detail-info col-md-6">
             <h1>{product.name}</h1>
             <span className="category-tag">{product.category}</span>
             <p className="detail-price">{formatCLP(product.price)}</p>

@@ -48,7 +48,7 @@ export default function Login() {
             <h1>Iniciar sesión</h1>
             <p className="auth-sub">Ingresa con tu correo y contraseña.</p>
           </div>
-          <div className="form-grid">
+          <div className="row g-3">
             <Field {...common('email')} label="Correo" type="email" placeholder="correo@duoc.cl"
               autoComplete="email" hint="Solo @duoc.cl, @profesor.duoc.cl o @gmail.com" full />
             <Field {...common('password')} label="Contraseña" type="password"
