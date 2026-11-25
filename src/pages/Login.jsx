@@ -5,6 +5,7 @@ import { useToast } from '../context/ToastContext';
 import { useForm } from '../hooks/useForm';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { LOGIN_RULES } from '../utils/validators';
+import { mensajeDeError } from '../services/api';
 
 export default function Login() {
   usePageTitle('Iniciar sesión');
@@ -16,13 +17,19 @@ export default function Login() {
     LOGIN_RULES
   );
 
-  const handleSubmit = e => {
+  const handleSubmit = async e => {
     e.preventDefault();
     if (validateAll()) {
       showToast('Revisa los campos marcados en rojo');
       return;
     }
-    const user = login(values.email.trim().toLowerCase(), values.password);
+    let user;
+    try {
+      user = await login(values.email.trim().toLowerCase(), values.password);
+    } catch (error) {
+      showToast(mensajeDeError(error));
+      return;
+    }
     if (!user) {
       showToast('Correo o contraseña incorrectos');
       return;

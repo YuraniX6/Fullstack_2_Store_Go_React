@@ -1,19 +1,39 @@
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import { useProducts } from '../context/ProductsContext';
 import { useToast } from '../context/ToastContext';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { formatCLP } from '../utils/format';
+import { ordenService } from '../services/ordenService';
+import { mensajeDeError } from '../services/api';
 
 export default function Cart() {
   usePageTitle('Carrito');
   const { items, total, changeQty, removeFromCart, clearCart } = useCart();
   const { showToast } = useToast();
+  const { session } = useAuth();
+  const { reload } = useProducts();
+  const navigate = useNavigate();
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     if (items.length === 0) {
       showToast('Tu carrito está vacío');
       return;
     }
+    if (!session) {
+      showToast('Inicia sesión para finalizar tu compra');
+      navigate('/login');
+      return;
+    }
+    try {
+      await ordenService.comprar(items.map(i => ({ productId: i.id, quantity: i.qty })));
+    } catch (error) {
+      showToast(mensajeDeError(error, 'No se pudo completar la compra'));
+      return;
+    }
     clearCart();
+    reload(); // el stock cambió: se vuelve a pedir el catálogo
     showToast('¡Compra realizada con éxito!');
   };
 

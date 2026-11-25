@@ -7,6 +7,7 @@ import { useForm } from '../hooks/useForm';
 import { CATEGORIAS } from '../data/categorias';
 import { PRODUCT_RULES, validarImagen } from '../utils/validators';
 import { PLACEHOLDER_IMG, fileToDataUrl } from '../utils/imagen';
+import { mensajeDeError } from '../services/api';
 
 const INITIAL = { name: '', category: '', price: '', stock: '', desc: '' };
 
@@ -45,7 +46,7 @@ export default function ProductForm() {
     }
   };
 
-  const handleSubmit = e => {
+  const handleSubmit = async e => {
     e.preventDefault();
     if (form.validateAll() || imageError) {
       showToast('Revisa los campos marcados en rojo');
@@ -56,17 +57,21 @@ export default function ProductForm() {
       form.setError('name', 'Ya existe un producto con este nombre');
       return;
     }
-    const created = addProduct({
-      name,
-      category: values.category,
-      price: parseInt(values.price, 10),
-      stock: parseInt(values.stock, 10),
-      desc: values.desc.trim(),
-      img: imageUrl || PLACEHOLDER_IMG
-    });
-    if (!created) {
-      setImageError('No hay espacio para guardar el producto. Prueba con una imagen más liviana.');
-      showToast('No se pudo guardar el producto');
+    try {
+      await addProduct({
+        name,
+        category: values.category,
+        price: parseInt(values.price, 10),
+        stock: parseInt(values.stock, 10),
+        desc: values.desc.trim(),
+        img: imageUrl || PLACEHOLDER_IMG
+      });
+    } catch (error) {
+      if (error?.response?.status === 409) {
+        form.setError('name', 'Ya existe un producto con este nombre');
+      } else {
+        showToast(mensajeDeError(error, 'No se pudo guardar el producto'));
+      }
       return;
     }
     showToast('Producto creado correctamente');

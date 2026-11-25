@@ -1,19 +1,17 @@
-// Campo de formulario con clases de Bootstrap (form-label, form-control / form-select,
-// is-valid / is-invalid e invalid-feedback). Con `children` se dibuja un <select>.
+// Campo de formulario con etiqueta, ayuda y mensaje de error.
+// Si recibe `children`, se dibuja un <select>; con as="textarea", un <textarea>.
 export default function Field({ name, label, hint, error, value, full, as, children, ...props }) {
-  const status = error ? 'is-invalid' : value.trim() !== '' ? 'is-valid' : '';
-  const isSelect = !as && Boolean(children);
-  const Control = as || (isSelect ? 'select' : 'input');
-  const base = isSelect ? 'form-select' : 'form-control';
+  const status = error ? 'invalid' : value.trim() !== '' ? 'valid' : '';
+  const Control = as || (children ? 'select' : 'input');
 
   return (
-    <div className={full ? 'col-12' : 'col-md-6'}>
-      <label htmlFor={name} className="form-label">{label}</label>
-      <Control id={name} name={name} value={value} className={`${base} ${status}`.trim()} {...props}>
+    <div className={`form-field${full ? ' full' : ''}`}>
+      <label htmlFor={name}>{label}</label>
+      <Control id={name} name={name} value={value} className={status} {...props}>
         {children}
       </Control>
-      {hint && <div className="form-text">{hint}</div>}
-      <div className="invalid-feedback" id={`${name}-error`}>{error}</div>
+      {hint && <small className="field-hint">{hint}</small>}
+      <small className="field-error" id={`${name}-error`}>{error}</small>
     </div>
   );
 }

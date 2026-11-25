@@ -1,15 +1,11 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
+import { EVENTO_SESION_EXPIRADA, tokens } from '../services/api';
+import { authService } from '../services/authService';
+import { usuarioService } from '../services/usuarioService';
 
 const AuthContext = createContext(null);
 
-const USERS_KEY = 'storego_users';
 const SESSION_KEY = 'storego_session';
-
-// Usuarios de prueba. En un sistema real las contraseñas NO se guardan en el navegador.
-const DEFAULT_USERS = [
-  { nombre: 'Administrador', apellidos: 'StoreGo', email: 'admin@duoc.cl', password: 'admin123', rol: 'admin' },
-  { nombre: 'Vendedor', apellidos: 'StoreGo', email: 'vendedor@duoc.cl', password: 'vend123', rol: 'vendedor' }
-];
 
 function readJSON(key, fallback) {
   try {
@@ -20,33 +16,44 @@ function readJSON(key, fallback) {
 }
 
 export function AuthProvider({ children }) {
-  const [storedUsers, setStoredUsers] = useState(() => readJSON(USERS_KEY, []));
+  // La sesión sobrevive a recargas: los datos de la sesión y los tokens están en localStorage.
   const [session, setSession] = useState(() => readJSON(SESSION_KEY, null));
 
-  const users = [...DEFAULT_USERS, ...storedUsers];
+  // api.js avisa cuando el token venció y no se pudo renovar: se cierra la sesión.
+  useEffect(() => {
+    const alExpirar = () => {
+      localStorage.removeItem(SESSION_KEY);
+      setSession(null);
+    };
+    window.addEventListener(EVENTO_SESION_EXPIRADA, alExpirar);
+    return () => window.removeEventListener(EVENTO_SESION_EXPIRADA, alExpirar);
+  }, []);
 
-  const login = (email, password) => {
-    const user = users.find(u => u.email === email && u.password === password);
-    if (!user) return null;
-    const data = { email: user.email, nombre: user.nombre, rol: user.rol };
-    localStorage.setItem(SESSION_KEY, JSON.stringify(data));
-    setSession(data);
-    return data;
+  // Devuelve la sesión, o null si el correo o la contraseña son incorrectos.
+  const login = async (email, password) => {
+    try {
+      const data = await authService.login(email, password);
+      localStorage.setItem(SESSION_KEY, JSON.stringify(data));
+      setSession(data);
+      return data;
+    } catch (error) {
+      if (error?.response?.status === 401) return null;
+      throw error;
+    }
   };
 
   const logout = () => {
+    tokens.borrar();
     localStorage.removeItem(SESSION_KEY);
     setSession(null);
   };
 
-  const registerUser = user => {
-    const next = [...storedUsers, user];
-    localStorage.setItem(USERS_KEY, JSON.stringify(next));
-    setStoredUsers(next);
-  };
+  // Tienda: registro público (CLIENTE). Panel: el administrador crea el usuario con su rol.
+  const registerUser = (user, { admin = false } = {}) =>
+    admin ? usuarioService.crear(user) : authService.registro(user);
 
   return (
-    <AuthContext.Provider value={{ session, users, login, logout, registerUser }}>
+    <AuthContext.Provider value={{ session, login, logout, registerUser }}>
       {children}
     </AuthContext.Provider>
   );

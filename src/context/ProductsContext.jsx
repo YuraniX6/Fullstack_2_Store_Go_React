@@ -1,43 +1,28 @@
-import { createContext, useContext, useState } from 'react';
-import { PRODUCTS } from '../data/products';
+import { createContext, useContext } from 'react';
+import { useCarga } from '../hooks/useCarga';
+import { productoService } from '../services/productoService';
 
 const ProductsContext = createContext(null);
 
-const KEY = 'storego_products';
-
-function loadCustom() {
-  try {
-    return JSON.parse(localStorage.getItem(KEY) || '[]');
-  } catch {
-    return [];
-  }
-}
-
 export function ProductsProvider({ children }) {
-  const [custom, setCustom] = useState(loadCustom);
+  // Los productos vienen de CatalogService (GET /api/v1/products).
+  const { datos, cargando, error, recargar } = useCarga(() => productoService.listar(), []);
+  const products = datos || [];
 
-  const persist = next => {
-    setCustom(next);
-    try {
-      localStorage.setItem(KEY, JSON.stringify(next));
-      return true;
-    } catch {
-      return false; // almacenamiento lleno (por ejemplo, imagen muy pesada)
-    }
+  // Devuelve el producto creado; si el backend lo rechaza, lanza el error (409 = nombre repetido).
+  const addProduct = async data => {
+    const created = await productoService.crear(data);
+    recargar();
+    return created;
   };
 
-  // Devuelve el producto creado, o null si no se pudo guardar.
-  const addProduct = data => {
-    const product = { ...data, id: `p-${Date.now()}`, custom: true };
-    return persist([...custom, product]) ? product : null;
+  const removeProduct = async id => {
+    await productoService.eliminar(id);
+    recargar();
   };
-
-  const removeProduct = id => persist(custom.filter(p => p.id !== id));
-
-  const products = [...PRODUCTS, ...custom];
 
   return (
-    <ProductsContext.Provider value={{ products, addProduct, removeProduct }}>
+    <ProductsContext.Provider value={{ products, loading: cargando, error, reload: recargar, addProduct, removeProduct }}>
       {children}
     </ProductsContext.Provider>
   );

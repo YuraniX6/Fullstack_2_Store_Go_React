@@ -47,14 +47,12 @@ export default function Home() {
       <section className="categories">
         <div className="container">
           <h2 className="section-title">Categorías</h2>
-          <div className="cat-grid row g-3">
+          <div className="cat-grid">
             {CATEGORIES.map(c => (
-              <div className="col-6 col-md-3" key={c.name}>
-                <Link to={`/productos?cat=${encodeURIComponent(c.name)}`} className="cat-card h-100">
-                  <span className="cat-icon">{c.icon}</span>
-                  <h3>{c.name}</h3>
-                </Link>
-              </div>
+              <Link to={`/productos?cat=${encodeURIComponent(c.name)}`} className="cat-card" key={c.name}>
+                <span className="cat-icon">{c.icon}</span>
+                <h3>{c.name}</h3>
+              </Link>
             ))}
           </div>
         </div>

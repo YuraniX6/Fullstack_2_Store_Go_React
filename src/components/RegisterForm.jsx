@@ -5,6 +5,7 @@ import { useToast } from '../context/ToastContext';
 import { useForm } from '../hooks/useForm';
 import { REGIONES } from '../data/regiones';
 import { LINKED_FIELDS, REGISTER_RULES } from '../utils/validators';
+import { mensajeDeError } from '../services/api';
 
 const INITIAL = {
   run: '', fechaNacimiento: '', nombre: '', apellidos: '',
@@ -14,7 +15,7 @@ const INITIAL = {
 
 // Sirve para el registro de la tienda y para "Nuevo usuario" del administrador (que trae tipo de usuario).
 export default function RegisterForm({ admin = false }) {
-  const { users, registerUser } = useAuth();
+  const { registerUser } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
 
@@ -34,7 +35,7 @@ export default function RegisterForm({ admin = false }) {
 
   const handleRegion = e => form.change('region', e.target.value, { comuna: '' });
 
-  const handleSubmit = e => {
+  const handleSubmit = async e => {
     e.preventDefault();
     if (form.validateAll()) {
       showToast('Revisa los campos marcados en rojo');
@@ -42,27 +43,28 @@ export default function RegisterForm({ admin = false }) {
     }
     const email = values.email.trim().toLowerCase();
     const run = values.run.trim().toUpperCase();
-    if (users.some(u => u.email === email)) {
-      form.setError('email', 'Este correo ya está registrado');
-      return;
-    }
-    if (users.some(u => u.run === run)) {
-      form.setError('run', 'Este RUN ya está registrado');
-      return;
-    }
-    registerUser({
+    const payload = {
       run,
       nombre: values.nombre.trim(),
       apellidos: values.apellidos.trim(),
       email,
       password: values.password,
-      fechaNacimiento: values.fechaNacimiento,
-      telefono: values.telefono.trim(),
       region: values.region,
       comuna: values.comuna,
-      direccion: values.direccion.trim(),
-      rol: admin ? values.tipoUsuario : 'cliente'
-    });
+      direccion: values.direccion.trim()
+    };
+    if (values.fechaNacimiento) payload.fechaNacimiento = values.fechaNacimiento;
+    if (values.telefono.trim()) payload.telefono = values.telefono.trim();
+    if (admin) payload.rol = values.tipoUsuario;
+    try {
+      await registerUser(payload, { admin });
+    } catch (error) {
+      const mensaje = mensajeDeError(error);
+      if (/email already/i.test(mensaje)) form.setError('email', 'Este correo ya está registrado');
+      else if (/run already/i.test(mensaje)) form.setError('run', 'Este RUN ya está registrado');
+      else showToast(mensaje);
+      return;
+    }
     if (admin) {
       showToast('Usuario creado correctamente');
       form.reset();

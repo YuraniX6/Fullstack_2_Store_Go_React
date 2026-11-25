@@ -6,7 +6,6 @@ import { ToastProvider } from './context/ToastContext';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { ProductsProvider } from './context/ProductsContext';
-import 'bootstrap/dist/css/bootstrap.min.css';
 import './index.css';
 
 createRoot(document.getElementById('root')).render(

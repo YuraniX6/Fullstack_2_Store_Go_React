@@ -1,7 +1,8 @@
 import { act } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import Login from './Login';
-import { AllProviders, mount, setValue, submit, blur } from '../test/helpers';
+import { authService } from '../services/authService';
+import { AllProviders, mount, setValue, submit, blur, flush } from '../test/helpers';
 
 describe('Página Login', () => {
   let view;
@@ -45,20 +46,34 @@ describe('Página Login', () => {
     expect(q('#email-error').textContent).toContain('Solo correos');
   });
 
-  it('avisa si el correo o la contraseña no coinciden con ninguna cuenta', () => {
+  it('avisa si el correo o la contraseña no coinciden con ninguna cuenta', async () => {
+    spyOn(authService, 'login').and.rejectWith({ response: { status: 401 } });
     render();
     fill('nadie@gmail.com', 'abcd');
     submit(q('form'));
+    await flush();
     expect(toast()).toBe('Correo o contraseña incorrectos');
   });
 
-  it('con credenciales correctas da la bienvenida y entra al panel', () => {
+  it('con credenciales correctas da la bienvenida y entra al panel', async () => {
+    spyOn(authService, 'login').and.resolveTo({ email: 'admin@duoc.cl', nombre: 'Administrador', rol: 'admin' });
     render();
     fill('admin@duoc.cl', 'admin123');
     submit(q('form'));
+    await flush();
+    expect(authService.login).toHaveBeenCalledWith('admin@duoc.cl', 'admin123');
     expect(toast()).toBe('Bienvenido, Administrador');
     act(() => jasmine.clock().tick(900));
     expect(q('p').textContent).toBe('Panel admin');
     expect(JSON.parse(localStorage.getItem('storego_session')).rol).toBe('admin');
+  });
+
+  it('si el backend no responde, muestra el mensaje de conexión', async () => {
+    spyOn(authService, 'login').and.rejectWith({ code: 'ERR_NETWORK', request: {} });
+    render();
+    fill('admin@duoc.cl', 'admin123');
+    submit(q('form'));
+    await flush();
+    expect(toast()).toContain('No se pudo conectar con el servidor');
   });
 });

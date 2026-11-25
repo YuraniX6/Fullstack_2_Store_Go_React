@@ -5,6 +5,26 @@ import { ToastProvider } from '../context/ToastContext';
 import { AuthProvider } from '../context/AuthContext';
 import { ProductsProvider } from '../context/ProductsContext';
 import { CartProvider } from '../context/CartContext';
+import { productoService } from '../services/productoService';
+import { PRODUCTS } from '../data/products';
+
+// Productos de prueba con id numérico, como los entrega CatalogService.
+export const PRODUCTOS_BASE = PRODUCTS.map((p, i) => ({ ...p, id: i + 1 }));
+
+// Ningún test llama al backend real: el catálogo se simula (por defecto, vacío).
+beforeEach(() => {
+  spyOn(productoService, 'listar').and.resolveTo([]);
+});
+
+// Cambia lo que responde el catálogo simulado.
+export const stubCatalogo = lista => productoService.listar.and.resolveTo(lista);
+
+// Espera a que terminen las promesas pendientes (llamadas a servicios simulados) y React redibuje.
+export async function flush() {
+  await act(async () => {
+    for (let i = 0; i < 10; i += 1) await Promise.resolve();
+  });
+}
 
 // Envuelve el componente con todos los contextos reales de la app.
 export function AllProviders({ children, route = '/' }) {

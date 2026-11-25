@@ -5,14 +5,16 @@ import ProductCard from './ProductCard';
 import { ToastProvider } from '../context/ToastContext';
 import { CartProvider } from '../context/CartContext';
 import { ProductsProvider } from '../context/ProductsContext';
-import { PRODUCTS } from '../data/products';
+import { productoService } from '../services/productoService';
+import { PRODUCTOS_BASE } from '../test/helpers';
 
 describe('ProductCard', () => {
   let container;
   let root;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     window.IS_REACT_ACT_ENVIRONMENT = true;
+    productoService.listar.and.resolveTo(PRODUCTOS_BASE);
     localStorage.clear();
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -23,12 +25,15 @@ describe('ProductCard', () => {
           <ToastProvider>
             <ProductsProvider>
               <CartProvider>
-                <ProductCard product={PRODUCTS[0]} />
+                <ProductCard product={PRODUCTOS_BASE[0]} />
               </CartProvider>
             </ProductsProvider>
           </ToastProvider>
         </MemoryRouter>
       );
+    });
+    await act(async () => {
+      for (let i = 0; i < 10; i += 1) await Promise.resolve();
     });
   });
 
@@ -48,7 +53,7 @@ describe('ProductCard', () => {
   });
 
   it('enlaza al detalle del producto', () => {
-    expect(container.querySelector('h3 a').getAttribute('href')).toBe('/producto/ps5');
+    expect(container.querySelector('h3 a').getAttribute('href')).toBe('/producto/1');
   });
 
   it('al presionar "Añadir" guarda el producto en el carrito', () => {
@@ -56,6 +61,6 @@ describe('ProductCard', () => {
       container.querySelector('.btn-add').click();
     });
     const cart = JSON.parse(localStorage.getItem('storego_cart'));
-    expect(cart).toEqual([{ id: 'ps5', qty: 1 }]);
+    expect(cart).toEqual([{ id: 1, qty: 1 }]);
   });
 });

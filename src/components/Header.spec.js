@@ -1,5 +1,5 @@
 import Header from './Header';
-import { AllProviders, mount, click } from '../test/helpers';
+import { AllProviders, mount, click, flush, stubCatalogo, PRODUCTOS_BASE } from '../test/helpers';
 
 const SESSION = { email: 'admin@duoc.cl', nombre: 'Administrador', rol: 'admin' };
 
@@ -23,9 +23,11 @@ describe('Header (navbar Bootstrap)', () => {
     expect(view.container.querySelector('#mainNav').className).toContain('navbar-collapse');
   });
 
-  it('el contador del carrito suma las cantidades guardadas', () => {
-    localStorage.setItem('storego_cart', JSON.stringify([{ id: 'ps5', qty: 2 }, { id: 'ps4', qty: 1 }]));
+  it('el contador del carrito suma las cantidades guardadas', async () => {
+    stubCatalogo(PRODUCTOS_BASE);
+    localStorage.setItem('storego_cart', JSON.stringify([{ id: 1, qty: 2 }, { id: 2, qty: 1 }]));
     render();
+    await flush();
     expect(view.container.querySelector('.cart-count').textContent).toBe('3');
     expect(view.container.querySelector('.cart-icon-img').getAttribute('src')).toContain('carrito_ocupado');
   });

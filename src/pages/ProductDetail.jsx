@@ -9,7 +9,7 @@ import { formatCLP } from '../utils/format';
 export default function ProductDetail() {
   const { id } = useParams();
   const { products } = useProducts();
-  const product = products.find(p => p.id === id);
+  const product = products.find(p => String(p.id) === id);
   const { addToCart } = useCart();
   const [qty, setQty] = useState(1);
   usePageTitle(product ? product.name : 'Producto no encontrado');

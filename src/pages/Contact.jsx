@@ -36,9 +36,9 @@ export default function Contact() {
       <section className="products">
         <div className="container">
           <form className="contact-form" onSubmit={handleSubmit}>
-            <input className="form-control" type="text" name="nombre" placeholder="Nombre" required value={form.nombre} onChange={handleChange} />
-            <input className="form-control" type="email" name="email" placeholder="Correo" required value={form.email} onChange={handleChange} />
-            <textarea className="form-control" name="mensaje" placeholder="Mensaje" rows={5} required value={form.mensaje} onChange={handleChange} />
+            <input type="text" name="nombre" placeholder="Nombre" required value={form.nombre} onChange={handleChange} />
+            <input type="email" name="email" placeholder="Correo" required value={form.email} onChange={handleChange} />
+            <textarea name="mensaje" placeholder="Mensaje" rows={5} required value={form.mensaje} onChange={handleChange} />
             <button type="submit" className="btn btn-primary">Enviar mensaje</button>
           </form>
         </div>

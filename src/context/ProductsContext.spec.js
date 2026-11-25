@@ -1,37 +1,23 @@
 import { act } from 'react';
-import { createRoot } from 'react-dom/client';
 import { ProductsProvider, useProducts } from './ProductsContext';
-import { PRODUCTS } from '../data/products';
+import { productoService } from '../services/productoService';
+import { mount, flush, stubCatalogo, PRODUCTOS_BASE } from '../test/helpers';
 
 describe('ProductsContext', () => {
-  let container;
-  let root;
   let api;
+  let view;
 
   function Probe() {
     api = useProducts();
     return null;
   }
 
-  beforeEach(() => {
-    window.IS_REACT_ACT_ENVIRONMENT = true;
-    localStorage.clear();
-    container = document.createElement('div');
-    document.body.appendChild(container);
-    root = createRoot(container);
-    act(() => {
-      root.render(
-        <ProductsProvider>
-          <Probe />
-        </ProductsProvider>
-      );
-    });
-  });
+  const render = async () => {
+    view = mount(<ProductsProvider><Probe /></ProductsProvider>);
+    await flush();
+  };
 
-  afterEach(() => {
-    act(() => root.unmount());
-    container.remove();
-  });
+  afterEach(() => view.unmount());
 
   const nuevo = {
     name: 'Control DualSense',
@@ -42,31 +28,51 @@ describe('ProductsContext', () => {
     img: 'data:image/png;base64,AAAA'
   };
 
-  it('parte con los productos base', () => {
-    expect(api.products.length).toBe(PRODUCTS.length);
+  it('carga los productos desde el catálogo (GET /products)', async () => {
+    stubCatalogo(PRODUCTOS_BASE);
+    await render();
+    expect(productoService.listar).toHaveBeenCalledTimes(1);
+    expect(api.products.length).toBe(PRODUCTOS_BASE.length);
+    expect(api.loading).toBeFalse();
   });
 
-  it('agrega un producto nuevo con id y lo marca como personalizado', () => {
+  it('si el backend no responde, no hay productos y se informa el error', async () => {
+    productoService.listar.and.rejectWith({ code: 'ERR_NETWORK', request: {} });
+    await render();
+    expect(api.products).toEqual([]);
+    expect(api.error).toContain('No se pudo conectar');
+  });
+
+  it('addProduct envía el producto y vuelve a pedir el catálogo', async () => {
+    stubCatalogo(PRODUCTOS_BASE);
+    spyOn(productoService, 'crear').and.resolveTo({ ...nuevo, id: 4 });
+    await render();
     let created;
-    act(() => { created = api.addProduct(nuevo); });
-    expect(created.id).toMatch(/^p-/);
-    expect(created.custom).toBeTrue();
-    expect(api.products.length).toBe(PRODUCTS.length + 1);
-    expect(api.products.some(p => p.name === 'Control DualSense')).toBeTrue();
+    await act(async () => { created = await api.addProduct(nuevo); });
+    await flush();
+    expect(productoService.crear).toHaveBeenCalledWith(nuevo);
+    expect(created.id).toBe(4);
+    expect(productoService.listar).toHaveBeenCalledTimes(2);
   });
 
-  it('guarda los productos nuevos en localStorage', () => {
-    act(() => { api.addProduct(nuevo); });
-    const saved = JSON.parse(localStorage.getItem('storego_products'));
-    expect(saved.length).toBe(1);
-    expect(saved[0].category).toBe('Controles');
+  it('addProduct propaga el error del backend (409 = nombre repetido)', async () => {
+    stubCatalogo(PRODUCTOS_BASE);
+    spyOn(productoService, 'crear').and.rejectWith({ response: { status: 409 } });
+    await render();
+    let error;
+    await act(async () => {
+      try { await api.addProduct(nuevo); } catch (e) { error = e; }
+    });
+    expect(error.response.status).toBe(409);
   });
 
-  it('elimina un producto creado', () => {
-    let created;
-    act(() => { created = api.addProduct(nuevo); });
-    act(() => { api.removeProduct(created.id); });
-    expect(api.products.length).toBe(PRODUCTS.length);
-    expect(JSON.parse(localStorage.getItem('storego_products'))).toEqual([]);
+  it('removeProduct elimina por id y vuelve a pedir el catálogo', async () => {
+    stubCatalogo(PRODUCTOS_BASE);
+    spyOn(productoService, 'eliminar').and.resolveTo();
+    await render();
+    await act(async () => { await api.removeProduct(1); });
+    await flush();
+    expect(productoService.eliminar).toHaveBeenCalledWith(1);
+    expect(productoService.listar).toHaveBeenCalledTimes(2);
   });
 });

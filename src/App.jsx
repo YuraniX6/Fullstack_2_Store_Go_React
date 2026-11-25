@@ -13,6 +13,7 @@ import Register from './pages/Register';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminNewUser from './pages/AdminNewUser';
 import AdminProducts from './pages/AdminProducts';
+import AdminOrders from './pages/AdminOrders';
 import AdminNewProduct from './pages/AdminNewProduct';
 
 export default function App() {
@@ -40,7 +41,15 @@ export default function App() {
         >
           <Route index element={<AdminDashboard />} />
           <Route path="productos" element={<AdminProducts />} />
-          <Route path="producto-nuevo" element={<AdminNewProduct />} />
+          <Route path="ordenes" element={<AdminOrders />} />
+          <Route
+            path="producto-nuevo"
+            element={
+              <ProtectedRoute roles={['admin']}>
+                <AdminNewProduct />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="usuario-nuevo"
             element={

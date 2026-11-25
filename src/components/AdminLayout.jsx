@@ -20,7 +20,8 @@ export default function AdminLayout() {
         <Link to="/admin" className="logo"><span>Store</span>Go</Link>
         <NavLink to="/admin" end className={sideClass}>Dashboard</NavLink>
         <NavLink to="/admin/productos" className={sideClass}>Productos</NavLink>
-        <NavLink to="/admin/producto-nuevo" className={sideClass}>Nuevo producto</NavLink>
+        <NavLink to="/admin/ordenes" className={sideClass}>Órdenes</NavLink>
+        {isAdmin && <NavLink to="/admin/producto-nuevo" className={sideClass}>Nuevo producto</NavLink>}
         {isAdmin && <a href="#" className="disabled" aria-disabled="true">Usuarios (próximamente)</a>}
         {isAdmin && <NavLink to="/admin/usuario-nuevo" className={sideClass}>Nuevo usuario</NavLink>}
         <Link to="/">Ver tienda</Link>
